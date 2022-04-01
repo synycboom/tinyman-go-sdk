@@ -8,8 +8,26 @@
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Other misc files
+*.log
+*.log.archive
 *.out
+*.prof
+coverage.html
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Exclude GoLand files
+.idea/
+
+# Ignore vim backup and swap files
+*~
+*.swp
+*.swo
+
+.vscode
+
+# Mac
+.DS_Store
+
+# Testing files
+*.feature
+temp
