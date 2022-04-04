@@ -85,7 +85,8 @@ func TestAsetAmountMul(t *testing.T) {
 
 		return
 	}
-	out, err = assetAmount1_1.Mul(nil, &assetAmount1_2.Amount)
+	amount := float64(assetAmount1_2.Amount)
+	out, err = assetAmount1_1.Mul(nil, &amount)
 	if err != nil {
 		t.Errorf("It should not return an error: %s", err.Error())
 

@@ -24,14 +24,14 @@ func NewAssetAmount(asset *Asset, amount uint64) (*AssetAmount, error) {
 }
 
 // Mul multiplies the asset with the other (if it is not nil) or otherwise numOther, and return a new one
-func (a *AssetAmount) Mul(other *AssetAmount, numOther *uint64) (*AssetAmount, error) {
+func (a *AssetAmount) Mul(other *AssetAmount, numOther *float64) (*AssetAmount, error) {
 	if err := validateAssetAmountParams(other, numOther); err != nil {
 		return nil, err
 	}
 	if other == nil && numOther != nil {
 		return &AssetAmount{
 			Asset:  a.Asset,
-			Amount: a.Amount * *numOther,
+			Amount: uint64(float64(a.Amount) * *numOther),
 		}, nil
 	}
 
@@ -171,7 +171,7 @@ func (a *AssetAmount) String() string {
 	return fmt.Sprintf("%s('%f')", a.Asset.UnitName, amount)
 }
 
-func validateAssetAmountParams(other *AssetAmount, numOther *uint64) error {
+func validateAssetAmountParams[T uint64 | float64](other *AssetAmount, numOther *T) error {
 	if other == nil && numOther == nil {
 		return fmt.Errorf("requires one parameter")
 	}
