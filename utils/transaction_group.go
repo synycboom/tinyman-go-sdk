@@ -2,29 +2,38 @@ package utils
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/crypto"
-	"github.com/algorand/go-algorand-sdk/future"
-	"github.com/algorand/go-algorand-sdk/types"
+	algoTypes "github.com/algorand/go-algorand-sdk/types"
+	"golang.org/x/crypto/ed25519"
 
-	"github.com/synycboom/tinyman-go-sdk/v1/constants"
+	"github.com/synycboom/tinyman-go-sdk/types"
 )
 
 // TransactionGroup is a group of transaction that can be executed atomically after signing
 type TransactionGroup struct {
-	transactions       []types.Transaction
+	transactions       []algoTypes.Transaction
 	signedTransactions [][]byte
 }
 
 // NewTransactionGroup creates a new transaction group
-func NewTransactionGroup(txs []types.Transaction) (*TransactionGroup, error) {
+func NewTransactionGroup(itxs []any) (*TransactionGroup, error) {
+	txs := make([]algoTypes.Transaction, len(itxs))
+	for idx, itx := range itxs {
+		tx, ok := itx.(algoTypes.Transaction)
+		if !ok {
+			return nil, fmt.Errorf("wrong transaction type")
+		}
+
+		txs[idx] = tx
+	}
 	gid, err := crypto.ComputeGroupID(txs)
 	if err != nil {
 		return nil, err
 	}
 
-	txsWithGroup := make([]types.Transaction, len(txs))
+	txsWithGroup := make([]algoTypes.Transaction, len(txs))
 	for idx, tx := range txs {
 		tx.Group = gid
 		txsWithGroup[idx] = tx
@@ -37,11 +46,12 @@ func NewTransactionGroup(txs []types.Transaction) (*TransactionGroup, error) {
 }
 
 // Sign signs a transaction group with an account
-func (tg *TransactionGroup) Sign(acc *crypto.Account) error {
-	accAddr := acc.Address.String()
+func (tg *TransactionGroup) Sign(acc types.CryptoAccount) error {
+	address := acc.Address()
+	privateKey := ed25519.PrivateKey(acc.PrivateKey())
 	for idx, tx := range tg.transactions {
-		if tx.Sender.String() == accAddr {
-			_, stx, err := crypto.SignTransaction(acc.PrivateKey, tx)
+		if tx.Sender.String() == address {
+			_, stx, err := crypto.SignTransaction(privateKey, tx)
 			if err != nil {
 				return err
 			}
@@ -54,15 +64,20 @@ func (tg *TransactionGroup) Sign(acc *crypto.Account) error {
 }
 
 // SignWithLogicSig signs a transaction group with logic sig account
-func (tg *TransactionGroup) SignWithLogicSig(account *crypto.LogicSigAccount) error {
-	address, err := account.Address()
+func (tg *TransactionGroup) SignWithLogicSig(acc types.CryptoLogicSigAccount) error {
+	address, err := acc.Address()
 	if err != nil {
 		return err
 	}
 
+	logicSig, ok := acc.LogicSig().(algoTypes.LogicSig)
+	if !ok {
+		return fmt.Errorf("wrong logic signature type")
+	}
+
 	for idx, tx := range tg.transactions {
-		if tx.Sender.String() == address.String() {
-			_, stx, err := crypto.SignLogicsigTransaction(account.Lsig, tx)
+		if tx.Sender.String() == address {
+			_, stx, err := crypto.SignLogicsigTransaction(logicSig, tx)
 			if err != nil {
 				return err
 			}
@@ -75,23 +90,16 @@ func (tg *TransactionGroup) SignWithLogicSig(account *crypto.LogicSigAccount) er
 }
 
 // Submit sends a signed transaction groups to the blockchain
-func (tg *TransactionGroup) Submit(ctx context.Context, client *algod.Client, wait bool) (string, error) {
+func (tg *TransactionGroup) Submit(ctx context.Context, client types.AlgoClient, wait bool) (string, error) {
+	return client.SendRawTransaction(ctx, tg.ComputeSignedGroup(), wait)
+}
+
+// ComputeSignedGroup calculate a signed group
+func (tg *TransactionGroup) ComputeSignedGroup() []byte {
 	var signedGroup []byte
 	for _, signedTx := range tg.signedTransactions {
 		signedGroup = append(signedGroup, signedTx...)
 	}
 
-	pendingTxID, err := client.SendRawTransaction(signedGroup).Do(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	if wait {
-		_, err := future.WaitForConfirmation(client, pendingTxID, constants.MaxWaitRound, ctx)
-		if err != nil {
-			return pendingTxID, err
-		}
-	}
-
-	return pendingTxID, nil
+	return signedGroup
 }
