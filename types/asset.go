@@ -25,6 +25,16 @@ type Asset struct {
 	UnitName string
 }
 
+// NewAsset creates an asset
+func NewAsset(id, decimals uint64, name, unitName string) *Asset {
+	return &Asset{
+		ID:       id,
+		Decimals: decimals,
+		Name:     name,
+		UnitName: unitName,
+	}
+}
+
 // String returns a string representing the asset
 func (a *Asset) String() string {
 	return fmt.Sprintf("Asset(%s - %d)", a.UnitName, a.ID)
@@ -53,7 +63,11 @@ func (a *Asset) Fetch(ctx context.Context, ac *algod.Client) error {
 }
 
 // Equal checks the equality of the asset with an other
-func (a *Asset) Equal(other Asset) bool {
+func (a *Asset) Equal(other *Asset) bool {
+	if other == nil {
+		return false
+	}
+
 	return a.ID == other.ID
 }
 
