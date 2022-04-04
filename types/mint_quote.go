@@ -2,7 +2,7 @@ package types
 
 // MintQuote represents a mint quote
 type MintQuote struct {
-	// AmountsIn is an asset mapping which maps between asset ids and asset amounts
+	// AmountsIn is an asset mapping which maps between asset ids and input asset amounts
 	AmountsIn map[uint64]AssetAmount
 
 	// LiquidityAssetAmount is a liquidity asset amount
