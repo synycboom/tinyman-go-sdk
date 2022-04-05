@@ -47,7 +47,7 @@ func BootstrapTransactions(
 		bootstrapAmount = constants.BootstrapTransactionAmountForAlgo
 	}
 
-	tx1, err = future.MakePaymentTxn(senderAddress, poolAddress.String(), bootstrapAmount, []byte("fee"), "", sp)
+	tx1, err = future.MakePaymentTxn(senderAddress, poolAddress.String(), bootstrapAmount, nil, "", sp)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +94,8 @@ func BootstrapTransactions(
 		"",
 		"",
 		"",
-		constants.LiquidityTokenUnitName,
-		fmt.Sprintf("Tinyman Pool %s-%s", asset1UnitName, asset2UnitName),
+		constants.LiquidityAssetUnitName,
+		fmt.Sprintf("TinymanPool1.1 %s-%s", asset1UnitName, asset2UnitName),
 		constants.TinyManURL,
 		"",
 	)
