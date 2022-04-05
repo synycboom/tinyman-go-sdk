@@ -6,9 +6,12 @@ import (
 
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
+	"github.com/algorand/go-algorand-sdk/crypto"
 
 	"github.com/synycboom/tinyman-go-sdk/types"
+	"github.com/synycboom/tinyman-go-sdk/utils"
 	"github.com/synycboom/tinyman-go-sdk/v1/constants"
+	"github.com/synycboom/tinyman-go-sdk/v1/contracts"
 )
 
 // Pool represents a liquidity pool
@@ -182,4 +185,143 @@ func (p *Pool) MinimumBalance() uint64 {
 		(constants.MinBalancePerApp * (numCreatedApps + numLocalApps)) +
 		(constants.MinBalancePerAppUint * totalUints) +
 		(constants.MinBalancePerAppByteSlice * totalByteSlices))
+}
+
+// LogicSig returns a logic signature account
+func (p *Pool) LogicSig() (*crypto.LogicSigAccount, error) {
+	return contracts.PoolLogicSigAccount(p.ValidatorAppID, p.Asset1.ID, p.Asset2.ID)
+}
+
+// Address returns a logic signature address
+func (p *Pool) Address() (string, error) {
+	poolAccount, err := p.LogicSig()
+	if err != nil {
+		return "", err
+	}
+
+	addr, err := poolAccount.Address()
+	if err != nil {
+		return "", err
+	}
+
+	return addr.String(), nil
+}
+
+// Asset1Price returns asset1 price
+func (p *Pool) Asset1Price() float64 {
+	return float64(p.Asset2Reserves) / float64(p.Asset1Reserves)
+}
+
+// Asset2Price returns asset2 price
+func (p *Pool) Asset2Price() float64 {
+	return float64(p.Asset1Reserves) / float64(p.Asset2Reserves)
+}
+
+// Info returns pool information
+func (p *Pool) Info() (*types.PoolInfo, error) {
+	address, err := p.Address()
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.PoolInfo{
+		Address:                         address,
+		Asset1ID:                        p.Asset1.ID,
+		Asset2ID:                        p.Asset2.ID,
+		Asset1UnitName:                  p.Asset1.UnitName,
+		Asset2UnitName:                  p.Asset2.UnitName,
+		LiquidityAssetID:                p.LiquidityAsset.ID,
+		LiquidityAssetName:              p.LiquidityAsset.Name,
+		Asset1Reserves:                  p.Asset1Reserves,
+		Asset2Reserves:                  p.Asset2Reserves,
+		IssuedLiquidity:                 p.IssuedLiquidity,
+		UnclaimedProtocolFee:            p.UnclaimedProtocolFee,
+		OutstandingAsset1Amount:         p.OutstandingAsset1Amount,
+		OutstandingAsset2Amount:         p.OutstandingAsset2Amount,
+		OutstandingLiquidityAssetAmount: p.OutstandingLiquidityAssetAmount,
+		ValidatorAppID:                  p.ValidatorAppID,
+		AlgoBalance:                     p.AlgoBalance,
+		Round:                           p.LastRefreshedRound,
+	}, nil
+}
+
+// Convert converts one asset to another
+func (p *Pool) Convert(amount *types.AssetAmount) (*types.AssetAmount, error) {
+	if amount == nil {
+		return nil, fmt.Errorf("amount is required")
+	}
+
+	if amount.Asset.Equal(p.Asset1) {
+		price := p.Asset1Price()
+		newAmount, err := amount.Mul(nil, &price)
+		if err != nil {
+			return nil, err
+		}
+
+		return &types.AssetAmount{
+			Asset:  p.Asset2,
+			Amount: newAmount.Amount,
+		}, nil
+	} else if amount.Asset.Equal(p.Asset2) {
+		price := p.Asset2Price()
+		newAmount, err := amount.Mul(nil, &price)
+		if err != nil {
+			return nil, err
+		}
+
+		return &types.AssetAmount{
+			Asset:  p.Asset1,
+			Amount: newAmount.Amount,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("mismatch asset")
+}
+
+// FetchStateInt returns an application state int value of the pool by a given key
+func (p *Pool) FetchStateInt(ctx context.Context, key string) (uint64, error) {
+	poolAddress, err := p.Address()
+	if err != nil {
+		return 0, err
+	}
+
+	accountInfo, err := p.ac.AccountInformation(poolAddress).Do(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(accountInfo.AppsLocalState) == 0 {
+		return 0, fmt.Errorf("application has no local state")
+	}
+
+	validatorAppState := make(map[string]models.TealValue)
+	for _, kv := range accountInfo.AppsLocalState[0].KeyValue {
+		validatorAppState[kv.Key] = kv.Value
+	}
+
+	return utils.StateInt(validatorAppState, key), nil
+}
+
+// FetchStateBytes returns an application state bytes value of the pool by a given key
+func (p *Pool) FetchStateBytes(ctx context.Context, key string) ([]byte, error) {
+	poolAddress, err := p.Address()
+	if err != nil {
+		return nil, err
+	}
+
+	accountInfo, err := p.ac.AccountInformation(poolAddress).Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(accountInfo.AppsLocalState) == 0 {
+		return nil, fmt.Errorf("application has no local state")
+	}
+
+	validatorAppState := make(map[string]models.TealValue)
+	for _, kv := range accountInfo.AppsLocalState[0].KeyValue {
+		validatorAppState[kv.Key] = kv.Value
+	}
+
+	return utils.StateBytes(validatorAppState, key), nil
 }
