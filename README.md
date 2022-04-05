@@ -26,6 +26,8 @@ Redeem excess amounts from previous transactions.
 
 # Examples
 Full examples, can be found in [/example](/example).
+To run the examples, create a new /example/.env file by following the variables in /example/.env.example
+Then setup /.vscode/launch.json, and use it to run the examples
 
 # Build
 dotnet-tinyman-sdk build pipelines use the [Assembly Info Task](https://github.com/BMuuN/vsts-assemblyinfo-task) extension.

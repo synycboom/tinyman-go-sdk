@@ -2,124 +2,80 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"os"
 
-	"github.com/algorand/go-algorand-sdk/client/v2/algod"
-	"github.com/algorand/go-algorand-sdk/crypto"
-	"github.com/algorand/go-algorand-sdk/mnemonic"
-	"golang.org/x/crypto/ed25519"
-
-	"github.com/synycboom/tinyman-go-sdk/v1"
-	"github.com/synycboom/tinyman-go-sdk/v1/constants"
+	exampleUtils "github.com/synycboom/tinyman-go-sdk/example/utils"
 	"github.com/synycboom/tinyman-go-sdk/v1/pools"
 )
 
 // This sample is provided for demonstration purposes only.
 
 func main() {
-	var privateKey ed25519.PrivateKey
-	base64PrivateKey := os.Getenv("BASE64_PRIVATE_KEY")
-	mnemonicWords := os.Getenv("MNEMONIC")
-	if len(mnemonicWords) > 0 {
-		key, err := mnemonic.ToPrivateKey(mnemonicWords)
-		if err != nil {
-			panic(err)
-		}
-
-		privateKey = key
-	} else {
-		decodedKey, err := base64.StdEncoding.DecodeString(base64PrivateKey)
-		if err != nil {
-			panic(err)
-		}
-
-		privateKey = decodedKey
-	}
-
-	account, err := crypto.AccountFromPrivateKey(privateKey)
+	ctx := context.Background()
+	account, err := exampleUtils.Account()
 	if err != nil {
 		panic(err)
 	}
 
 	userAddress := account.Address.String()
-	algodCli, err := algod.MakeClient(constants.AlgodTestnetHost, "")
+	ac, tc, err := exampleUtils.Clients(userAddress)
 	if err != nil {
 		panic(err)
 	}
 
-	client, err := tinyman.NewTestNetClient(algodCli, userAddress)
+	// Check whether the user already opted in the app or not, if not let the user opt in
+	if err := exampleUtils.OptInAppIfNeeded(ctx, tc, account); err != nil {
+		panic(err)
+	}
+
+	// Create a new asset used to bootstraping one side of the liquidity pool
+	assetID, err := exampleUtils.CreateAsset("sdk-test-2", "st2", 6, 1000000000, userAddress, account, ac, tc)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx := context.Background()
-	isOptedIn, err := client.IsOptedIn(ctx, userAddress)
+	token, err := tc.FetchAsset(ctx, assetID)
 	if err != nil {
 		panic(err)
 	}
 
-	if !isOptedIn {
-		fmt.Println("Account is not opted into app, opting in now...")
-		txGroup, err := client.PrepareAppOptInTransaction(ctx, userAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		if err := txGroup.Sign(&account); err != nil {
-			panic(err)
-		}
-
-		txID, err := client.Submit(ctx, txGroup, true)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Submitted opt-in tx %s", txID)
-	}
-
-	assetID, err := createAsset("sdk-test-2", "st2", 6, userAddress, account, algodCli, client)
+	algo, err := tc.FetchAsset(ctx, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	token, err := client.FetchAsset(ctx, assetID)
+	// Fetch the created pool
+	pool, err := pools.NewPool(ctx, ac, token, algo, nil, tc.ValidatorAppID, userAddress, true)
 	if err != nil {
 		panic(err)
 	}
 
-	algo, err := client.FetchAsset(ctx, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	pool, err := pools.NewPool(ctx, algodCli, token, algo, nil, client.ValidatorAppID, userAddress, true)
-	if err != nil {
-		panic(err)
-	}
-
+	// Prepare a transaction group for bootstrapping
+	// Note that some transactions need to be signed with LogicSig account, and they were signed in the function.
 	txGroup, err := pool.PrepareBootstrapTransactions(ctx, userAddress)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := txGroup.Sign(&account); err != nil {
+	// Some transactions that need the user signatures are signed here
+	if err := txGroup.Sign(account); err != nil {
 		panic(err)
 	}
 
-	txID, err := client.Submit(ctx, txGroup, true)
+	// Submit a group of transaction to the blockchain
+	txID, err := tc.Submit(ctx, txGroup, true)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("Liquidity pool was bootstrapped with txid %s\n", txID)
 
-	pool, err = client.FetchPool(ctx, token, algo, true)
+	pool, err = tc.FetchPool(ctx, token, algo, true)
 	if err != nil {
 		panic(err)
 	}
 
+	// Get pool information
 	info, err := pool.Info()
 	if err != nil {
 		panic(err)
