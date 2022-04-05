@@ -8,7 +8,7 @@ import (
 )
 
 // AppOptInTransactions prepares a transaction group to opt-in of Tinyman
-func AppOptInTransactions(validatorAppID uint64, senderAddress string, sp types.SuggestedParams) (*tUtils.TransactionGroup, error) {
+func AppOptInTransactions(validatorAppID uint64, senderAddress string, sp types.SuggestedParams) (*utils.TransactionGroup, error) {
 	addr, err := types.DecodeAddress(senderAddress)
 	if err != nil {
 		return nil, err
