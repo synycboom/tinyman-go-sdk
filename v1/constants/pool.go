@@ -19,7 +19,7 @@ const (
 
 	MinBalancePerAppUint = 28500
 
-	BootstrapTransactionAmountForAlgo = 860000
+	BootstrapTransactionAmountForAlgo = 859000
 
-	BootstrapTransactionAmount = 961000
+	BootstrapTransactionAmount = 960000
 )
