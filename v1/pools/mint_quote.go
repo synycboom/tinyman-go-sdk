@@ -12,10 +12,13 @@ import (
 // FetchMintQuote returns a mint quote
 func (p *Pool) FetchMintQuote(
 	ctx context.Context,
-	amountA types.AssetAmount,
+	amountA *types.AssetAmount,
 	amountB *types.AssetAmount,
 	slippage float64,
 ) (*types.MintQuote, error) {
+	if amountA == nil {
+		return nil, fmt.Errorf("amountA is required")
+	}
 	if slippage == 0 {
 		slippage = 0.05
 	}
@@ -24,11 +27,11 @@ func (p *Pool) FetchMintQuote(
 	var amount1 *types.AssetAmount
 	var amount2 *types.AssetAmount
 	if amountA.Asset.Equal(p.Asset1) {
-		amount1 = &amountA
+		amount1 = amountA
 		amount2 = amountB
 	} else {
 		amount1 = amountB
-		amount2 = &amountA
+		amount2 = amountA
 	}
 
 	if err := p.Refresh(ctx, nil); err != nil {

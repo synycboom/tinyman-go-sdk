@@ -58,9 +58,9 @@ func (p *Pool) FetchFixedOutputSwapQuote(ctx context.Context, amountOut types.As
 
 	return &types.SwapQuote{
 		SwapType:  constants.SwapFixedOutput,
-		AmountIn:  amountIn,
-		AmountOut: amountOut,
-		SwapFee: types.AssetAmount{
+		AmountIn:  &amountIn,
+		AmountOut: &amountOut,
+		SwapFee: &types.AssetAmount{
 			Asset:  amountIn.Asset,
 			Amount: bigSwapFees.Uint64(),
 		},

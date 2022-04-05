@@ -10,13 +10,13 @@ type SwapQuote struct {
 	SwapType string
 
 	// AmountIn is an input asset amount
-	AmountIn AssetAmount
+	AmountIn *AssetAmount
 
 	// AmountOut is an output asset amount
-	AmountOut AssetAmount
+	AmountOut *AssetAmount
 
 	// SwapFee is a swap fee
-	SwapFee AssetAmount
+	SwapFee *AssetAmount
 
 	// Slippage is a slippage
 	Slippage float64
@@ -25,7 +25,7 @@ type SwapQuote struct {
 // AmountOutWithSlippage calculates the output asset amount after applying the slippage
 func (s *SwapQuote) AmountOutWithSlippage() (*AssetAmount, error) {
 	if s.SwapType == constants.SwapFixedOutput {
-		return &s.AmountOut, nil
+		return s.AmountOut, nil
 	}
 
 	amountOutWithSlippage, err := s.AmountOut.Mul(nil, &s.Slippage)
@@ -43,7 +43,7 @@ func (s *SwapQuote) AmountOutWithSlippage() (*AssetAmount, error) {
 // AmountInWithSlippage calculates the input asset amount after applying the slippage
 func (s *SwapQuote) AmountInWithSlippage() (*AssetAmount, error) {
 	if s.SwapType == constants.SwapFixedInput {
-		return &s.AmountIn, nil
+		return s.AmountIn, nil
 	}
 
 	amountInWithSlippage, err := s.AmountIn.Mul(nil, &s.Slippage)

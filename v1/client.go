@@ -239,7 +239,7 @@ func (c *Client) IsAssetOptedIn(ctx context.Context, assetID uint64, userAddr st
 }
 
 // Balance returns an asset balance of a user
-func (c *Client) Balance(ctx context.Context, asset types.Asset, userAddress string) (*types.AssetAmount, error) {
+func (c *Client) Balance(ctx context.Context, asset *types.Asset, userAddress string) (*types.AssetAmount, error) {
 	if len(userAddress) == 0 {
 		userAddress = c.UserAddress
 	}
@@ -253,7 +253,7 @@ func (c *Client) Balance(ctx context.Context, asset types.Asset, userAddress str
 	for _, a := range account.Assets {
 		if a.AssetId == asset.ID {
 			return &types.AssetAmount{
-				Asset:  &asset,
+				Asset:  asset,
 				Amount: a.Amount,
 			}, nil
 		}

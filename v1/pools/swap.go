@@ -2,6 +2,7 @@ package pools
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/synycboom/tinyman-go-sdk/types"
 	"github.com/synycboom/tinyman-go-sdk/utils"
@@ -12,10 +13,13 @@ import (
 func (p *Pool) PrepareSwapTransactions(
 	ctx context.Context,
 	assetAmountIn,
-	assetAmountOut types.AssetAmount,
+	assetAmountOut *types.AssetAmount,
 	swapType,
 	swapperAddress string,
 ) (*utils.TransactionGroup, error) {
+	if assetAmountIn == nil || assetAmountOut == nil {
+		return nil, fmt.Errorf("assetAmountIn and assetAmountOut are required")
+	}
 	if len(swapperAddress) == 0 {
 		swapperAddress = p.UserAddress
 	}
@@ -46,6 +50,9 @@ func (p *Pool) PrepareSwapTransactions(
 
 // PrepareSwapTransactionsFromQuote prepares swap transaction from a given swap quote and returns a transaction group
 func (p *Pool) PrepareSwapTransactionsFromQuote(ctx context.Context, quote *types.SwapQuote, swapperAddress string) (*utils.TransactionGroup, error) {
+	if quote == nil {
+		return nil, fmt.Errorf("quote is required")
+	}
 	amountOut, err := quote.AmountOutWithSlippage()
 	if err != nil {
 		return nil, err
@@ -54,7 +61,7 @@ func (p *Pool) PrepareSwapTransactionsFromQuote(ctx context.Context, quote *type
 	txGroup, err := p.PrepareSwapTransactions(
 		ctx,
 		quote.AmountIn,
-		*amountOut,
+		amountOut,
 		quote.SwapType,
 		swapperAddress,
 	)
