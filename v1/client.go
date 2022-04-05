@@ -65,12 +65,12 @@ func NewMainNetClient(ac *algod.Client, userAddress string) (*Client, error) {
 }
 
 // FetchPool fetches a pool for given asset1 and asset2
-func (c *Client) FetchPool(asset1, asset2 *types.Asset, fetch bool) (*pools.Pool, error) {
+func (c *Client) FetchPool(ctx context.Context, asset1, asset2 *types.Asset, fetch bool) (*pools.Pool, error) {
 	if asset1 == nil || asset2 == nil {
 		return nil, fmt.Errorf("asset1 and asset2 are required")
 	}
 
-	return pools.NewPool(c.ac, asset1, asset2, nil, c.ValidatorAppID, c.UserAddress, fetch)
+	return pools.NewPool(ctx, c.ac, asset1, asset2, nil, c.ValidatorAppID, c.UserAddress, fetch)
 }
 
 // FetchAsset fetches an asset for a given asset id

@@ -37,6 +37,7 @@ type Pool struct {
 }
 
 func NewPool(
+	ctx context.Context,
 	ac *algod.Client,
 	assetA,
 	assetB *types.Asset,
@@ -45,7 +46,6 @@ func NewPool(
 	userAddress string,
 	fetch bool,
 ) (*Pool, error) {
-	ctx := context.Background()
 	p := Pool{}
 	p.ac = ac
 	p.ValidatorAppID = validatorAppID
@@ -92,7 +92,7 @@ func NewPool(
 }
 
 // FromAccountInfo create a pool from an account
-func FromAccountInfo(account models.Account, ac *algod.Client, userAddress string) (*Pool, error) {
+func FromAccountInfo(ctx context.Context, account models.Account, ac *algod.Client, userAddress string) (*Pool, error) {
 	info, err := poolInfoFromAccountInfo(account)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func FromAccountInfo(account models.Account, ac *algod.Client, userAddress strin
 	assetA := &types.Asset{ID: info.Asset1ID}
 	assetB := &types.Asset{ID: info.Asset2ID}
 
-	return NewPool(ac, assetA, assetB, info, info.ValidatorAppID, userAddress, false)
+	return NewPool(ctx, ac, assetA, assetB, info, info.ValidatorAppID, userAddress, false)
 }
 
 // Refresh refreshes pool information
