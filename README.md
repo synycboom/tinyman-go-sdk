@@ -8,6 +8,11 @@ This is a Golang SDK providing access to the [Tinyman AMM](https://docs.tinyman.
 go get github.com/synycboom/tinyman-go-sdk@v0.1.0
 ```
 
+This SDK also requires gl-algorand-sdk
+```command
+go get -u github.com/algorand/go-algorand-sdk/...
+```
+
 # Package overview
 `v1` package provides a Tinyman client which is a main entry point for this SDK.
 `v1/constants` contains constants for using with the SDK.
