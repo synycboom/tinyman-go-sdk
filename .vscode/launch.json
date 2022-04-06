@@ -41,7 +41,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/example/boostrap",
+            "program": "${workspaceFolder}/example/bootstrap",
             "envFile": "${workspaceFolder}/example/.env",
         }
     ]
