@@ -29,22 +29,22 @@ go get -u github.com/algorand/go-algorand-sdk/...
 # Usage
 
 ## Boostrapping
-Bootstrap a liquidity pool [/example/bootstrap](/example/bootstrap)
+Bootstrap a liquidity pool [/example/bootstrap](/example/bootstrap/main.go)
 
 ## Minting
-Add assets to an existing pool in exchange for the liquidity pool asset [/example/mint](/example/mint).
+Add assets to an existing pool in exchange for the liquidity pool asset [/example/mint](/example/mint/main.go).
 
 ## Burning
-Exchange the liquidity pool asset for the pool assets [/example/burn](/example/burn).
+Exchange the liquidity pool asset for the pool assets [/example/burn](/example/burn/main.go).
 
 ## Swapping
-Swap one asset for another in an existing pool [/example/swap](/example/swap).
+Swap one asset for another in an existing pool [/example/swap](/example/swap/main.go).
 
 ## Redeeming
-Redeem excess amounts from previous transactions [/example/redeem](/example/redeem).
+Redeem excess amounts from previous transactions [/example/redeem](/example/redeem/main.go).
 
 ## Running example
-To run the examples, create a new /example/.env file by following the variables in /example/.env.example
+To run the examples, create a new `/example/.env` file by following the variables in [/example/.env.example](/example/.env.example)
 Then setup /.vscode/launch.json, and use it to run the examples
 
 # License
