@@ -90,7 +90,7 @@ func (p *Pool) FetchMintQuote(
 					utils.ToBigUint(amount2.Amount),
 				),
 			),
-			utils.ToBigUint(100),
+			utils.ToBigUint(1000),
 		).Uint64()
 
 		slippage = 0
