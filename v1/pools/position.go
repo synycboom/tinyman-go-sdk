@@ -32,7 +32,7 @@ func (p *Pool) FetchPoolPosition(ctx context.Context, userAddress string) (*type
 		}
 	}
 
-	quote, err := p.FetchBurnQuote(ctx, liquidityAssetAmount, 0)
+	quote, err := p.FetchBurnQuote(ctx, &liquidityAssetAmount, 0)
 	if err != nil {
 		return nil, err
 	}

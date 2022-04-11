@@ -2,6 +2,7 @@ package pools
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/synycboom/tinyman-go-sdk/types"
 	"github.com/synycboom/tinyman-go-sdk/utils"
@@ -9,7 +10,11 @@ import (
 )
 
 // PrepareRedeemTransactions prepares redeem transaction and returns a transaction group
-func (p *Pool) PrepareRedeemTransactions(ctx context.Context, amountOut types.AssetAmount, redeemerAddress string) (*utils.TransactionGroup, error) {
+func (p *Pool) PrepareRedeemTransactions(ctx context.Context, amountOut *types.AssetAmount, redeemerAddress string) (*utils.TransactionGroup, error) {
+	if amountOut == nil {
+		return nil, fmt.Errorf("amountOut is required")
+	}
+
 	if len(redeemerAddress) == 0 {
 		redeemerAddress = p.UserAddress
 	}
@@ -37,8 +42,12 @@ func (p *Pool) PrepareRedeemTransactions(ctx context.Context, amountOut types.As
 }
 
 // PrepareRedeemTransactionsFromQuote prepares redeem transactions and return a transaction group from quote
-func (p *Pool) PrepareRedeemTransactionsFromQuote(ctx context.Context, quote types.RedeemQuote, redeemerAddress string) (*utils.TransactionGroup, error) {
-	return p.PrepareRedeemTransactions(ctx, quote.Amount, redeemerAddress)
+func (p *Pool) PrepareRedeemTransactionsFromQuote(ctx context.Context, quote *types.RedeemQuote, redeemerAddress string) (*utils.TransactionGroup, error) {
+	if quote == nil {
+		return nil, fmt.Errorf("quote is required")
+	}
+
+	return p.PrepareRedeemTransactions(ctx, &quote.Amount, redeemerAddress)
 }
 
 // FilterRedeemQuotes filters redeem quotes belonging to this pool

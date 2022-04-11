@@ -70,7 +70,7 @@ func main() {
 
 	// Prepare a transaction group for redeeming
 	// Note that some transactions need to be signed with LogicSig account, and they were signed in the function.
-	txGroup, err := pool.PrepareRedeemTransactionsFromQuote(ctx, *redeemQuote, userAddress)
+	txGroup, err := pool.PrepareRedeemTransactionsFromQuote(ctx, redeemQuote, userAddress)
 	if err != nil {
 		panic(err)
 	}

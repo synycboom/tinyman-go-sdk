@@ -10,7 +10,11 @@ import (
 )
 
 // FetchFixedOutputSwapQuote returns a fixed input swap quote
-func (p *Pool) FetchFixedOutputSwapQuote(ctx context.Context, amountOut types.AssetAmount, slippage float64) (*types.SwapQuote, error) {
+func (p *Pool) FetchFixedOutputSwapQuote(ctx context.Context, amountOut *types.AssetAmount, slippage float64) (*types.SwapQuote, error) {
+	if amountOut == nil {
+		return nil, fmt.Errorf("amountOut is required")
+	}
+
 	if slippage == 0 {
 		slippage = 0.05
 	}
@@ -59,7 +63,7 @@ func (p *Pool) FetchFixedOutputSwapQuote(ctx context.Context, amountOut types.As
 	return &types.SwapQuote{
 		SwapType:  constants.SwapFixedOutput,
 		AmountIn:  &amountIn,
-		AmountOut: &amountOut,
+		AmountOut: amountOut,
 		SwapFee: &types.AssetAmount{
 			Asset:  amountIn.Asset,
 			Amount: bigSwapFees.Uint64(),

@@ -9,7 +9,11 @@ import (
 )
 
 // FetchBurnQuote returns a burn quote
-func (p *Pool) FetchBurnQuote(ctx context.Context, liquidityAsset types.AssetAmount, slippage float64) (*types.BurnQuote, error) {
+func (p *Pool) FetchBurnQuote(ctx context.Context, liquidityAsset *types.AssetAmount, slippage float64) (*types.BurnQuote, error) {
+	if liquidityAsset == nil {
+		return nil, fmt.Errorf("liquidityAsset is required")
+	}
+
 	if slippage == 0 {
 		slippage = 0.05
 	}
@@ -48,7 +52,7 @@ func (p *Pool) FetchBurnQuote(ctx context.Context, liquidityAsset types.AssetAmo
 				Amount: asset2Amount.Uint64(),
 			},
 		},
-		LiquidityAssetAmount: liquidityAsset,
+		LiquidityAssetAmount: *liquidityAsset,
 		Slippage:             slippage,
 	}, nil
 }

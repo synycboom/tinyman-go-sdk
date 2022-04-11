@@ -2,6 +2,7 @@ package pools
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/synycboom/tinyman-go-sdk/types"
 	"github.com/synycboom/tinyman-go-sdk/utils"
@@ -12,9 +13,13 @@ import (
 func (p *Pool) PrepareMintTransactions(
 	ctx context.Context,
 	amountsIn map[uint64]types.AssetAmount,
-	liquidityAssetAmount types.AssetAmount,
+	liquidityAssetAmount *types.AssetAmount,
 	minterAddress string,
 ) (*utils.TransactionGroup, error) {
+	if liquidityAssetAmount == nil {
+		return nil, fmt.Errorf("liquidityAssetAmount is required")
+	}
+
 	asset1Amount := amountsIn[p.Asset1.ID]
 	asset2Amount := amountsIn[p.Asset2.ID]
 	if len(minterAddress) == 0 {
@@ -46,10 +51,14 @@ func (p *Pool) PrepareMintTransactions(
 
 // PrepareMintTransactionsFromQuote prepares mint transaction from a given mint quote and returns a transaction group
 func (p *Pool) PrepareMintTransactionsFromQuote(ctx context.Context, quote *types.MintQuote, minterAddress string) (*utils.TransactionGroup, error) {
+	if quote == nil {
+		return nil, fmt.Errorf("quote is required")
+	}
+
 	return p.PrepareMintTransactions(
 		ctx,
 		quote.AmountsIn,
-		quote.LiquidityAssetAmount,
+		&quote.LiquidityAssetAmount,
 		minterAddress,
 	)
 }

@@ -70,7 +70,7 @@ func main() {
 	fmt.Printf("Current balance of liquidity \n\t - ID:%v = %v\n", pool.LiquidityAsset.ID, balance.Amount)
 
 	// Fetch burn quote used when buring liquidity asset
-	quote, err := pool.FetchBurnQuote(ctx, *balance, 0.05)
+	quote, err := pool.FetchBurnQuote(ctx, balance, 0.05)
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +89,7 @@ func main() {
 
 	// Prepare a transaction group for burning
 	// Note that some transactions need to be signed with LogicSig account, and they were signed in the function.
-	txGroup, err := pool.PrepareBurnTransactionsFromQuote(ctx, *quote, userAddress)
+	txGroup, err := pool.PrepareBurnTransactionsFromQuote(ctx, quote, userAddress)
 	if err != nil {
 		panic(err)
 	}

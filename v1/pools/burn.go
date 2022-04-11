@@ -2,6 +2,7 @@ package pools
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/synycboom/tinyman-go-sdk/types"
 	"github.com/synycboom/tinyman-go-sdk/utils"
@@ -12,9 +13,13 @@ import (
 func (p *Pool) PrepareBurnTransactions(
 	ctx context.Context,
 	assetsOut map[uint64]types.AssetAmount,
-	liquidityAssetAmount types.AssetAmount,
+	liquidityAssetAmount *types.AssetAmount,
 	burnerAddress string,
 ) (*utils.TransactionGroup, error) {
+	if liquidityAssetAmount == nil {
+		return nil, fmt.Errorf("liquidityAssetAmount is required")
+	}
+
 	asset1Amount := assetsOut[p.Asset1.ID]
 	asset2Amount := assetsOut[p.Asset2.ID]
 	if len(burnerAddress) == 0 {
@@ -45,7 +50,11 @@ func (p *Pool) PrepareBurnTransactions(
 }
 
 // PrepareBurnTransactionsFromQuote prepares burn transaction from a given burn quote and returns a transaction group
-func (p *Pool) PrepareBurnTransactionsFromQuote(ctx context.Context, quote types.BurnQuote, burnerAddress string) (*utils.TransactionGroup, error) {
+func (p *Pool) PrepareBurnTransactionsFromQuote(ctx context.Context, quote *types.BurnQuote, burnerAddress string) (*utils.TransactionGroup, error) {
+	if quote == nil {
+		return nil, fmt.Errorf("quote is required")
+	}
+
 	amountsOut, err := quote.AmountsOutWithSlippage()
 	if err != nil {
 		return nil, err
@@ -54,7 +63,7 @@ func (p *Pool) PrepareBurnTransactionsFromQuote(ctx context.Context, quote types
 	return p.PrepareBurnTransactions(
 		ctx,
 		amountsOut,
-		quote.LiquidityAssetAmount,
+		&quote.LiquidityAssetAmount,
 		burnerAddress,
 	)
 }
