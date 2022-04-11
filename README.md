@@ -5,7 +5,7 @@ This is a Golang SDK providing access to the [Tinyman AMM](https://docs.tinyman.
 
 # Installation
 ```command
-go get github.com/synycboom/tinyman-go-sdk@v0.1.0
+go get github.com/synycboom/tinyman-go-sdk@v0.1.1
 ```
 
 This SDK also requires gl-algorand-sdk
