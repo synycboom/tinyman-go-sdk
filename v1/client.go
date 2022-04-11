@@ -136,7 +136,7 @@ func (c *Client) PrepareAssetOptInTransactions(ctx context.Context, assetID uint
 
 // FetchExcessAmount fetches user's excess amounts and returns redeem quotes
 func (c *Client) FetchExcessAmount(ctx context.Context, userAddr string) ([]types.RedeemQuote, error) {
-	var pools []types.RedeemQuote
+	var quotes []types.RedeemQuote
 	if len(userAddr) == 0 {
 		userAddr = c.UserAddress
 	}
@@ -144,7 +144,7 @@ func (c *Client) FetchExcessAmount(ctx context.Context, userAddr string) ([]type
 	accountInfo := c.ac.AccountInformation(userAddr)
 	account, err := accountInfo.Do(ctx)
 	if err != nil {
-		return pools, err
+		return quotes, err
 	}
 
 	var validatorApp *models.ApplicationLocalState
@@ -156,7 +156,7 @@ func (c *Client) FetchExcessAmount(ctx context.Context, userAddr string) ([]type
 	}
 
 	if validatorApp == nil {
-		return pools, nil
+		return quotes, nil
 	}
 
 	validatorAppState := make(map[string]models.TealValue)
@@ -183,7 +183,7 @@ func (c *Client) FetchExcessAmount(ctx context.Context, userAddr string) ([]type
 				return nil, err
 			}
 
-			pools = append(pools, types.RedeemQuote{
+			quotes = append(quotes, types.RedeemQuote{
 				Amount: types.AssetAmount{
 					Asset:  asset,
 					Amount: value,
@@ -193,10 +193,10 @@ func (c *Client) FetchExcessAmount(ctx context.Context, userAddr string) ([]type
 		}
 	}
 
-	return pools, nil
+	return quotes, nil
 }
 
-// IsOptedIn checkes whether a user opted in for the application
+// IsOptedIn checks whether a user opted in for the application
 func (c *Client) IsOptedIn(ctx context.Context, userAddr string) (bool, error) {
 	if len(userAddr) == 0 {
 		userAddr = c.UserAddress
@@ -217,7 +217,7 @@ func (c *Client) IsOptedIn(ctx context.Context, userAddr string) (bool, error) {
 	return false, nil
 }
 
-// IsOptedIn checkes whether a user opted in for asset
+// IsAssetOptedIn checks whether a user opted in for asset
 func (c *Client) IsAssetOptedIn(ctx context.Context, assetID uint64, userAddr string) (bool, error) {
 	if len(userAddr) == 0 {
 		userAddr = c.UserAddress

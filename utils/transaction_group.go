@@ -2,6 +2,8 @@ package utils
 
 import (
 	"context"
+	"fmt"
+	"golang.org/x/crypto/ed25519"
 
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
 	"github.com/algorand/go-algorand-sdk/crypto"
@@ -42,6 +44,22 @@ func (tg *TransactionGroup) Sign(acc *crypto.Account) error {
 	for idx, tx := range tg.transactions {
 		if tx.Sender.String() == accAddr {
 			_, stx, err := crypto.SignTransaction(acc.PrivateKey, tx)
+			if err != nil {
+				return err
+			}
+
+			tg.signedTransactions[idx] = stx
+		}
+	}
+
+	return nil
+}
+
+// SignWithPrivateKey signs a transaction group with a given private key if a given address matches
+func (tg *TransactionGroup) SignWithPrivateKey(address string, sk ed25519.PrivateKey) error {
+	for idx, tx := range tg.transactions {
+		if tx.Sender.String() == address {
+			_, stx, err := crypto.SignTransaction(sk, tx)
 			if err != nil {
 				return err
 			}
@@ -94,4 +112,25 @@ func (tg *TransactionGroup) Submit(ctx context.Context, client *algod.Client, wa
 	}
 
 	return pendingTxID, nil
+}
+
+// Transactions returns transactions inside the transaction group
+func (tg *TransactionGroup) Transactions() []types.Transaction {
+	return tg.transactions
+}
+
+// SignedTransactions returns signed transactions inside the transaction group
+func (tg *TransactionGroup) SignedTransactions() [][]byte {
+	return tg.signedTransactions
+}
+
+// SetSignedTransactions sets a signed transaction at a given index
+func (tg *TransactionGroup) SetSignedTransactions(index int, signedTx []byte) error {
+	if index > len(tg.signedTransactions)-1 {
+		return fmt.Errorf("index is out of bound")
+	}
+
+	tg.signedTransactions[index] = signedTx
+
+	return nil
 }
